@@ -1,0 +1,32 @@
+#+TITLE: README
+
+* Introduction
+Hazel is lightweight, client-go based Kubernetes utility for monitoring and filtering logs from pods.
+
+* Requirements
+- [[https://go.dev/doc/install][Go]] 1.20+
+- [[https://kubernetes.io/docs/tasks/tools/install-kubectl/][kubectl]] 1.25+
+
+* Usage
+Ensure that you have your cluster context correctly set up in your kubeconfig file.
+
+From there you can run the following command to start Hazel:
+#+BEGIN_SRC sh
+go run . --namespace <namespace> --service <serviceName>
+#+END_SRC
+
+This will start Hazel and begin streaming logs from the specified service.
+
+In order to filter logs you can set the following flag:
+#+BEGIN_SRC sh
+go run . --namespace <namespace> --service <serviceName> --logFilter <filter>
+#+END_SRC
+
+** Adding to PATH
+If you would like to add Hazel to your PATH, you can run the following command:
+#+BEGIN_SRC sh
+go build -o bin/hazel.exe
+#+END_SRC
+
+From there you can add the path to the =bin= directory to your PATH variable.
+Restart your terminal and you should be able to run =hazel= from anywhere.
