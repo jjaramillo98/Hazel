@@ -55,6 +55,7 @@ func WatchAndFilterServiceLogs(client *kubernetes.Clientset, serviceName string,
 		currPod := pod.Name
 		if strings.Contains(currPod, serviceName) {
 			podName = currPod
+			break
 		}
 	}
 
