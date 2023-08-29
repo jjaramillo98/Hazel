@@ -16,7 +16,6 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 )
 
-// "Fight me" -Jesse
 const EMPTY_STRING = ""
 const KUBE_CONFIG_RELATIVE_PATH = "/.kube/config"
 
