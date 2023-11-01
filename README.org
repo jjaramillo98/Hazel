@@ -17,11 +17,6 @@ go run . --namespace <namespace> --service <serviceName>
 
 This will start Hazel and begin streaming logs from the specified service.
 
-In order to filter logs you can set the following flag:
-#+BEGIN_SRC sh
-go run . --namespace <namespace> --service <serviceName> --logFilter <filter>
-#+END_SRC
-
 ** Adding to PATH
 If you would like to add Hazel to your PATH, you can run the following command:
 #+BEGIN_SRC sh
