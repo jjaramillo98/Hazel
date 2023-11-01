@@ -75,6 +75,7 @@ func WatchAndFilterServiceLogs(client *kubernetes.Clientset, serviceName string,
 	timeRegex, _ := regexp.Compile(LOG_TIMESTAMP_REGEX)
 
 	for {
+		// This seems like a reasonable buffer size
 		buffer := make([]byte, 2048)
 
 		bufferSize, err := logStream.Read(buffer)
