@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"github.com/withmandala/go-log"
@@ -16,8 +17,12 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 )
 
-const EMPTY_STRING = ""
-const KUBE_CONFIG_RELATIVE_PATH = "/.kube/config"
+const (
+	EMPTY_STRING              string = ""
+	KUBE_CONFIG_RELATIVE_PATH string = "/.kube/config"
+	LOG_MESSAGE_REGEX         string = `\"message\":\"(.*?)\",` // Workaround for lack of positive lookaround support in GO
+	LOG_TIMESTAMP_REGEX       string = `\"env_time\":\"(.*?)\",`
+)
 
 var logger = log.New(os.Stderr).WithColor()
 
@@ -42,7 +47,7 @@ func InitializeClient() *kubernetes.Clientset {
 	return client
 }
 
-func WatchAndFilterServiceLogs(client *kubernetes.Clientset, serviceName string, namespace string, filter string) {
+func WatchAndFilterServiceLogs(client *kubernetes.Clientset, serviceName string, namespace string) {
 	logger.Info("Watching logs for service:", serviceName)
 
 	context := context.Background()
@@ -66,6 +71,9 @@ func WatchAndFilterServiceLogs(client *kubernetes.Clientset, serviceName string,
 
 	PanicOnError(&err)
 
+	messageRegex, _ := regexp.Compile(LOG_MESSAGE_REGEX)
+	timeRegex, _ := regexp.Compile(LOG_TIMESTAMP_REGEX)
+
 	for {
 		buffer := make([]byte, 2048)
 
@@ -84,21 +92,24 @@ func WatchAndFilterServiceLogs(client *kubernetes.Clientset, serviceName string,
 			PanicOnError(&err)
 		}
 
-		message := string(buffer[:bufferSize])
-		if strings.Contains(message, filter) || filter == "" {
-			fmt.Print(message)
+		matchMessage := messageRegex.Find(buffer)
+		timeMessage := timeRegex.Find(buffer)
+
+		if matchMessage != nil && timeMessage != nil {
+			message := strings.Replace(string(matchMessage), "\"message\":", "", 1)
+			timestamp := strings.Replace(string(timeMessage), "\"env_time\":", "", 1)
+			fmt.Printf("%s %s\n", timestamp, message)
 		}
+
 	}
 }
 
 func main() {
 	var serviceName string
 	var namespace string
-	var filter string
 
 	flag.StringVar(&serviceName, "service", "", "Name of service")
 	flag.StringVar(&namespace, "namespace", "default", "Namespace of service")
-	flag.StringVar(&filter, "logFilter", "", "Log Filter")
 	flag.Parse()
 
 	if serviceName == "" {
@@ -110,5 +121,5 @@ func main() {
 	client := InitializeClient()
 	logger.Info("Client Initialized.")
 
-	WatchAndFilterServiceLogs(client, serviceName, namespace, filter)
+	WatchAndFilterServiceLogs(client, serviceName, namespace)
 }
